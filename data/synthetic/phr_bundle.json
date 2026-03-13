@@ -1,0 +1,423 @@
+{
+  "meta": {
+    "schema_version": "0.1",
+    "generated_at_utc": "2026-03-13T00:04:56.399092Z",
+    "description": "Synthetic PHR bundle for visit-prep demo. Not real patient data."
+  },
+  "patient": {
+    "id": "P1",
+    "name": "Synthetic Patient",
+    "dob": "1982-05-14",
+    "sex": "M",
+    "country": "UAE"
+  },
+  "problems": [
+    {
+      "name": "Hypertension",
+      "onset_date": "2024-01-03",
+      "status": "active"
+    },
+    {
+      "name": "Prediabetes",
+      "onset_date": "2024-10-29",
+      "status": "active"
+    },
+    {
+      "name": "Hyperlipidemia",
+      "onset_date": "2024-06-01",
+      "status": "active"
+    }
+  ],
+  "medications": [
+    {
+      "name": "Amlodipine",
+      "dose": "5 mg",
+      "frequency": "once daily",
+      "start_date": "2024-04-12"
+    },
+    {
+      "name": "Atorvastatin",
+      "dose": "20 mg",
+      "frequency": "once daily",
+      "start_date": "2024-07-21"
+    },
+    {
+      "name": "Metformin",
+      "dose": "500 mg",
+      "frequency": "twice daily",
+      "start_date": "2025-08-25"
+    }
+  ],
+  "allergies": [
+    {
+      "substance": "Penicillin",
+      "reaction": "rash"
+    }
+  ],
+  "vitals": [
+    {
+      "date": "2025-03-15",
+      "type": "BP_systolic",
+      "value": 126,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-03-15",
+      "type": "BP_diastolic",
+      "value": 90,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-03-15",
+      "type": "weight",
+      "value": 83.2,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-04-12",
+      "type": "BP_systolic",
+      "value": 148,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-04-12",
+      "type": "BP_diastolic",
+      "value": 81,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-04-12",
+      "type": "weight",
+      "value": 80.9,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-05-12",
+      "type": "BP_systolic",
+      "value": 138,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-05-12",
+      "type": "BP_diastolic",
+      "value": 84,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-05-12",
+      "type": "weight",
+      "value": 78.3,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-06-14",
+      "type": "BP_systolic",
+      "value": 135,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-06-14",
+      "type": "BP_diastolic",
+      "value": 80,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-06-14",
+      "type": "weight",
+      "value": 79.9,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-07-15",
+      "type": "BP_systolic",
+      "value": 135,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-07-15",
+      "type": "BP_diastolic",
+      "value": 79,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-07-15",
+      "type": "weight",
+      "value": 84.6,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-08-10",
+      "type": "BP_systolic",
+      "value": 129,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-08-10",
+      "type": "BP_diastolic",
+      "value": 79,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-08-10",
+      "type": "weight",
+      "value": 82.6,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-09-12",
+      "type": "BP_systolic",
+      "value": 123,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-09-12",
+      "type": "BP_diastolic",
+      "value": 85,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-09-12",
+      "type": "weight",
+      "value": 78.4,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-10-10",
+      "type": "BP_systolic",
+      "value": 131,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-10-10",
+      "type": "BP_diastolic",
+      "value": 91,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-10-10",
+      "type": "weight",
+      "value": 79.2,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-11-08",
+      "type": "BP_systolic",
+      "value": 140,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-11-08",
+      "type": "BP_diastolic",
+      "value": 87,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-11-08",
+      "type": "weight",
+      "value": 82.5,
+      "unit": "kg"
+    },
+    {
+      "date": "2025-12-13",
+      "type": "BP_systolic",
+      "value": 127,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-12-13",
+      "type": "BP_diastolic",
+      "value": 81,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2025-12-13",
+      "type": "weight",
+      "value": 82.7,
+      "unit": "kg"
+    },
+    {
+      "date": "2026-01-12",
+      "type": "BP_systolic",
+      "value": 128,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2026-01-12",
+      "type": "BP_diastolic",
+      "value": 89,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2026-01-12",
+      "type": "weight",
+      "value": 78.8,
+      "unit": "kg"
+    },
+    {
+      "date": "2026-02-11",
+      "type": "BP_systolic",
+      "value": 124,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2026-02-11",
+      "type": "BP_diastolic",
+      "value": 79,
+      "unit": "mmHg"
+    },
+    {
+      "date": "2026-02-11",
+      "type": "weight",
+      "value": 83.0,
+      "unit": "kg"
+    }
+  ],
+  "labs": [
+    {
+      "date": "2025-03-20",
+      "test": "HbA1c",
+      "value": 6.3,
+      "unit": "%",
+      "ref_range": "4.0–5.6",
+      "flag": "high"
+    },
+    {
+      "date": "2025-03-20",
+      "test": "LDL",
+      "value": 144,
+      "unit": "mg/dL",
+      "ref_range": "< 100",
+      "flag": "high"
+    },
+    {
+      "date": "2025-06-16",
+      "test": "HbA1c",
+      "value": 6.1,
+      "unit": "%",
+      "ref_range": "4.0–5.6",
+      "flag": "high"
+    },
+    {
+      "date": "2025-06-16",
+      "test": "LDL",
+      "value": 148,
+      "unit": "mg/dL",
+      "ref_range": "< 100",
+      "flag": "high"
+    },
+    {
+      "date": "2025-09-14",
+      "test": "HbA1c",
+      "value": 6.0,
+      "unit": "%",
+      "ref_range": "4.0–5.6",
+      "flag": "high"
+    },
+    {
+      "date": "2025-09-14",
+      "test": "LDL",
+      "value": 113,
+      "unit": "mg/dL",
+      "ref_range": "< 100",
+      "flag": "high"
+    },
+    {
+      "date": "2025-12-11",
+      "test": "HbA1c",
+      "value": 5.8,
+      "unit": "%",
+      "ref_range": "4.0–5.6",
+      "flag": "high"
+    },
+    {
+      "date": "2025-12-11",
+      "test": "LDL",
+      "value": 128,
+      "unit": "mg/dL",
+      "ref_range": "< 100",
+      "flag": "high"
+    }
+  ],
+  "encounters": [
+    {
+      "date": "2025-08-15",
+      "type": "Primary care visit",
+      "provider": "Family Medicine",
+      "note": "Discussed BP control, diet, and physical activity. Reviewed labs and medication adherence."
+    },
+    {
+      "date": "2025-12-13",
+      "type": "Follow-up visit",
+      "provider": "Family Medicine",
+      "note": "Reviewed home BP readings. Patient reports inconsistent sleep and work stress. Adjusted lifestyle plan; meds unchanged."
+    },
+    {
+      "date": "2026-02-21",
+      "type": "Lab review (tele-visit)",
+      "provider": "Family Medicine",
+      "note": "Reviewed HbA1c and LDL trends; reinforced adherence and nutrition. Suggested repeat labs in ~3 months."
+    }
+  ],
+  "symptom_diary": [
+    {
+      "date": "2025-11-30",
+      "symptom": "stress",
+      "severity_1to5": 1,
+      "notes": "Noticed after a late night."
+    },
+    {
+      "date": "2025-12-09",
+      "symptom": "poor sleep",
+      "severity_1to5": 4,
+      "notes": "Improved with hydration and rest."
+    },
+    {
+      "date": "2025-12-11",
+      "symptom": "stress",
+      "severity_1to5": 3,
+      "notes": "Noticed after a late night."
+    },
+    {
+      "date": "2025-12-14",
+      "symptom": "poor sleep",
+      "severity_1to5": 4,
+      "notes": "Improved on weekends."
+    },
+    {
+      "date": "2025-12-17",
+      "symptom": "fatigue",
+      "severity_1to5": 3,
+      "notes": "Improved with hydration and rest."
+    },
+    {
+      "date": "2026-01-04",
+      "symptom": "stress",
+      "severity_1to5": 3,
+      "notes": "Occurred during a busy work week."
+    },
+    {
+      "date": "2026-01-06",
+      "symptom": "stress",
+      "severity_1to5": 2,
+      "notes": "Improved with hydration and rest."
+    },
+    {
+      "date": "2026-02-04",
+      "symptom": "heartburn",
+      "severity_1to5": 1,
+      "notes": "Noticed after a late night."
+    },
+    {
+      "date": "2026-02-06",
+      "symptom": "stress",
+      "severity_1to5": 1,
+      "notes": "Noticed after a late night."
+    },
+    {
+      "date": "2026-02-21",
+      "symptom": "stress",
+      "severity_1to5": 4,
+      "notes": "Noticed after a late night."
+    }
+  ]
+}

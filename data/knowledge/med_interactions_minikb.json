@@ -1,0 +1,42 @@
+﻿{
+  "version": "0.1",
+  "source": "synthetic_curated_minikb",
+  "last_updated": "2026-03-13",
+  "items": [
+    {
+      "pair": ["metformin", "alcohol"],
+      "severity": "moderate",
+      "summary": "Alcohol may increase the risk of lactic acidosis when combined with metformin; advise caution and discuss with a clinician.",
+      "recommendation": "Limit alcohol intake; seek clinician advice especially with liver/kidney issues.",
+      "evidence_note": "Synthetic KB entry for demonstration."
+    },
+    {
+      "pair": ["warfarin", "ibuprofen"],
+      "severity": "major",
+      "summary": "Increased bleeding risk when NSAIDs are used with warfarin.",
+      "recommendation": "Avoid or consult clinician; consider alternatives and monitoring.",
+      "evidence_note": "Synthetic KB entry for demonstration."
+    },
+    {
+      "pair": ["sertraline", "st john's wort"],
+      "severity": "major",
+      "summary": "Potential serotonin syndrome risk when combining SSRIs with St. John's wort.",
+      "recommendation": "Avoid combination; consult clinician.",
+      "evidence_note": "Synthetic KB entry for demonstration."
+    },
+    {
+      "pair": ["levothyroxine", "calcium"],
+      "severity": "moderate",
+      "summary": "Calcium can reduce levothyroxine absorption if taken close together.",
+      "recommendation": "Separate doses by at least 4 hours; consult clinician for personalized guidance.",
+      "evidence_note": "Synthetic KB entry for demonstration."
+    },
+    {
+      "pair": ["metformin", "vitamin d"],
+      "severity": "none",
+      "summary": "No clinically significant interaction is expected for typical use.",
+      "recommendation": "No special action required; confirm with clinician if you have specific concerns.",
+      "evidence_note": "Synthetic KB entry for demonstration."
+    }
+  ]
+}
