@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from ch_agent.core.llm import make_openai_client, openai_chat
 from ch_agent.core.schemas import Evidence, ToolResult
@@ -11,12 +11,10 @@ def generate_visit_brief_from_parsed_tool(
     parsed_phr: Dict[str, Any],
     visit_reason: str,
     patient_goals: Optional[str] = None,
+    priorities: Optional[List[Dict[str, Any]]] = None,
     model: str = "gpt-4o-mini",
 ) -> ToolResult:
-    """
-    Generate visit brief from already-parsed PHR output.
-    This makes multi-step traces explicit: parse -> brief.
-    """
+    priorities = priorities or []
 
     counts = parsed_phr.get("counts", {})
     patient = parsed_phr.get("patient", {})
@@ -32,7 +30,7 @@ def generate_visit_brief_from_parsed_tool(
     system_prompt = (
         "You are a consumer-health assistant helping a user prepare for a clinician visit.\n"
         "You MUST NOT diagnose or recommend medication changes.\n"
-        "You MUST use only the provided PHR_DATA and avoid inventing numbers.\n"
+        "You MUST use only the provided PHR_DATA and PRIORITIES and avoid inventing numbers.\n"
         "Output MUST be in Markdown.\n"
         "Provide:\n"
         "  (1) A concise one-page 'Visit Brief' with clear headings.\n"
@@ -43,6 +41,7 @@ def generate_visit_brief_from_parsed_tool(
     user_prompt = (
         f"VISIT_REASON:\n{visit_reason}\n\n"
         f"PATIENT_GOALS (optional):\n{patient_goals or ''}\n\n"
+        f"PRIORITIES (if available):\n{priorities}\n\n"
         f"PHR_DATA (structured):\n"
         f"- patient: {patient}\n"
         f"- counts: {counts}\n"
@@ -66,18 +65,18 @@ def generate_visit_brief_from_parsed_tool(
         max_tokens=700,
     )
 
-    # Evidence here points to "parsed PHR" rather than original file.
     ev = Evidence(
         source_type="derived",
         source_id="parse_phr_bundle.outputs",
-        locator="counts/patient/problems/medications/allergies/labs/vitals/encounters/symptom_diary/timeline",
-        snippet=f"visit_reason={visit_reason} timeline_events_used={len(timeline)}",
+        locator="structured PHR + priorities",
+        snippet=f"visit_reason={visit_reason} priorities={len(priorities)} timeline_events_used={len(timeline)}",
         retrieved_at_utc=utc_now_iso(),
     )
 
     outputs = {
         "visit_reason": visit_reason,
         "patient_goals": patient_goals,
+        "priorities": priorities,
         "visit_brief_markdown": reply.text,
         "llm_model": reply.model,
         "llm_usage": reply.usage,

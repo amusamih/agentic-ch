@@ -16,11 +16,14 @@ from ch_agent.core.safety import SafetyPolicy
 from ch_agent.core.tools import ToolRegistry, ToolSpec
 
 from ch_agent.tools.wearable import get_sleep_series_tool
+from ch_agent.tools.sleep_analysis import analyze_sleep_patterns_tool
 from ch_agent.tools.retrieval import retrieve_sleep_guidance_tool
 from ch_agent.tools.meds import check_interactions_tool
 from ch_agent.tools.retrieval_meds import retrieve_meds_guidance_tool
+from ch_agent.tools.med_profile import load_med_profile_tool
 from ch_agent.tools.phr import parse_phr_bundle_tool
 from ch_agent.tools.visit_prep2 import generate_visit_brief_from_parsed_tool
+from ch_agent.tools.visit_priorities import extract_visit_priorities_tool
 
 
 app = typer.Typer(add_completion=False)
@@ -38,8 +41,17 @@ class SleepGuidanceInputs(BaseModel):
     user_query: str = Field(..., min_length=3)
 
 
+class SleepAnalysisInputs(BaseModel):
+    nights: Optional[List[Dict[str, Any]]] = None
+    user_query: str = ""
+
+
 class InteractionInputs(BaseModel):
     med_list: List[str]
+
+
+class LoadMedProfileInputs(BaseModel):
+    dummy: str = "ok"
 
 
 class MedGuidanceInputs(BaseModel):
@@ -50,10 +62,15 @@ class ParseInputs(BaseModel):
     dummy: str = "ok"
 
 
+class VisitPrioritiesInputs(BaseModel):
+    parsed_phr: Optional[Dict[str, Any]] = None
+
+
 class BriefFromParsedInputs(BaseModel):
     visit_reason: Optional[str] = None  # auto-filled by AgentRunner if missing
     patient_goals: str = ""
-    parsed_phr: Optional[Dict[str, Any]] = None  # auto-wired by AgentRunner
+    parsed_phr: Optional[Dict[str, Any]] = None
+    priorities: Optional[List[Dict[str, Any]]] = None  # auto-wired by AgentRunner
 
 
 def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
@@ -73,6 +90,19 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
                 ),
             )
         )
+
+        reg.register(
+            ToolSpec(
+                name="analyze_sleep_patterns",
+                description="Analyze retrieved sleep nights to detect variability, short nights, and notable patterns.",
+                input_model=SleepAnalysisInputs,
+                handler=lambda inp: analyze_sleep_patterns_tool(
+                    nights=inp.nights,
+                    user_query=inp.user_query,
+                ),
+            )
+        )
+
         reg.register(
             ToolSpec(
                 name="retrieve_sleep_guidance",
@@ -98,6 +128,18 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
         )
 
 
+
+        reg.register(
+            ToolSpec(
+                name="load_med_profile",
+                description="Load the user's saved medication/supplement profile from a local synthetic dataset.",
+                input_model=LoadMedProfileInputs,
+                handler=lambda _inp: load_med_profile_tool(
+                    profile_path=(project_root / "data" / "synthetic" / "med_profile.json")
+                ),
+            )
+        )
+
         reg.register(
             ToolSpec(
                 name="retrieve_meds_guidance",
@@ -121,6 +163,18 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
                 handler=lambda _inp: parse_phr_bundle_tool(bundle_path=bundle_path),
             )
         )
+
+        reg.register(
+            ToolSpec(
+                name="extract_visit_priorities",
+                description="Extract the most important visit agenda items from parsed PHR data.",
+                input_model=VisitPrioritiesInputs,
+                handler=lambda inp: extract_visit_priorities_tool(
+                    parsed_phr=inp.parsed_phr or {},
+                ),
+            )
+        )
+
         reg.register(
             ToolSpec(
                 name="generate_visit_brief_from_parsed",
@@ -133,6 +187,7 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
                     parsed_phr=inp.parsed_phr or {},
                     visit_reason=inp.visit_reason,
                     patient_goals=inp.patient_goals,
+                    priorities=inp.priorities or [],
                     model="gpt-4o-mini",
                 ),
             )

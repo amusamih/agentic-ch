@@ -118,6 +118,68 @@ class AgentRunner:
                     tool_calls.append({"tool_name": "generate_visit_brief_from_parsed", "inputs": {}})
                     tracer.log("CHECK", {"plan_repair": "added generate_visit_brief_from_parsed for visit brief request"})
 
+        
+        # --- Plan repair (policy): for meds requests, load saved profile when needed ---
+        if self.config.mode == "AGENTIC_MULTI" and selected_agent == "MedSafetyAgent":
+            ql = (user_query or "").lower()
+            wants_meds = any(k in ql for k in ["medication", "medications", "meds", "supplement", "supplements", "interaction"])
+            wants_guidance = any(k in ql for k in ["what to do", "recommend", "next step", "next steps", "should i do", "what should i do"])
+            has_context_meds = bool(context.get("med_list"))
+            has_profile = any(c.get("tool_name") == "load_med_profile" for c in tool_calls)
+            has_check = any(c.get("tool_name") == "check_interactions" for c in tool_calls)
+            has_guidance = any(c.get("tool_name") == "retrieve_meds_guidance" for c in tool_calls)
+
+            if wants_meds and (not has_context_meds) and ("load_med_profile" in self.registry.get_tool_specs()):
+                if not has_profile:
+                    tool_calls.insert(0, {"tool_name": "load_med_profile", "inputs": {"dummy": "ok"}})
+                    tracer.log("CHECK", {"plan_repair": "added load_med_profile for meds request"})
+                if not has_check and ("check_interactions" in self.registry.get_tool_specs()):
+                    tool_calls.append({"tool_name": "check_interactions", "inputs": {}})
+
+            if wants_guidance and ("retrieve_meds_guidance" in self.registry.get_tool_specs()) and not has_guidance:
+                tool_calls.append({"tool_name": "retrieve_meds_guidance", "inputs": {"user_query": user_query}})
+                tracer.log("CHECK", {"plan_repair": "added retrieve_meds_guidance for meds next-step request"})
+
+        
+        # --- Plan repair (policy): for sleep requests, ensure structured analysis before guidance ---
+        if self.config.mode == "AGENTIC_MULTI" and selected_agent == "SleepAgent":
+            ql = (user_query or "").lower()
+            wants_analysis = any(k in ql for k in ["my sleep", "last two weeks", "my data", "analyze", "pattern", "insight", "disrupted"])
+            wants_guidance = any(k in ql for k in ["suggest", "guidance", "improve", "recommend"])
+            has_series = any(c.get("tool_name") == "get_sleep_series" for c in tool_calls)
+            has_analysis = any(c.get("tool_name") == "analyze_sleep_patterns" for c in tool_calls)
+            has_guidance = any(c.get("tool_name") == "retrieve_sleep_guidance" for c in tool_calls)
+
+            if wants_analysis:
+                if not has_series and ("get_sleep_series" in self.registry.get_tool_specs()):
+                    tool_calls.insert(0, {"tool_name": "get_sleep_series", "inputs": {"user_id": context.get("user_id", "U1"), "days": 14}})
+                if not has_analysis and ("analyze_sleep_patterns" in self.registry.get_tool_specs()):
+                    # place after get_sleep_series if present
+                    idx = 1 if tool_calls and tool_calls[0].get("tool_name") == "get_sleep_series" else len(tool_calls)
+                    tool_calls.insert(idx, {"tool_name": "analyze_sleep_patterns", "inputs": {"user_query": user_query}})
+                    tracer.log("CHECK", {"plan_repair": "added analyze_sleep_patterns for sleep analysis request"})
+            if wants_guidance and ("retrieve_sleep_guidance" in self.registry.get_tool_specs()) and not has_guidance:
+                tool_calls.append({"tool_name": "retrieve_sleep_guidance", "inputs": {"user_query": user_query}})
+                tracer.log("CHECK", {"plan_repair": "added retrieve_sleep_guidance for sleep guidance request"})
+
+        # --- Plan repair (policy): for visit requests, add priorities before brief generation ---
+        if self.config.mode == "AGENTIC_MULTI" and selected_agent == "VisitPrepAgent":
+            ql = (user_query or "").lower()
+            wants_brief = any(k in ql for k in ["visit brief", "doctor appointment", "appointment", "visit prep", "visit preparation"])
+            if wants_brief:
+                has_parse = any(c.get("tool_name") == "parse_phr_bundle" for c in tool_calls)
+                has_priorities = any(c.get("tool_name") == "extract_visit_priorities" for c in tool_calls)
+                has_brief = any(c.get("tool_name") == "generate_visit_brief_from_parsed" for c in tool_calls)
+                if not has_parse and ("parse_phr_bundle" in self.registry.get_tool_specs()):
+                    tool_calls.insert(0, {"tool_name": "parse_phr_bundle", "inputs": {"dummy": "ok"}})
+                if not has_priorities and ("extract_visit_priorities" in self.registry.get_tool_specs()):
+                    idx = 1 if tool_calls and tool_calls[0].get("tool_name") == "parse_phr_bundle" else len(tool_calls)
+                    tool_calls.insert(idx, {"tool_name": "extract_visit_priorities", "inputs": {}})
+                    tracer.log("CHECK", {"plan_repair": "added extract_visit_priorities for visit brief request"})
+                if not has_brief and ("generate_visit_brief_from_parsed" in self.registry.get_tool_specs()):
+                    tool_calls.append({"tool_name": "generate_visit_brief_from_parsed", "inputs": {}})
+                    tracer.log("CHECK", {"plan_repair": "added generate_visit_brief_from_parsed for visit brief request"})
+
         # 3) Execute tool calls with explicit auto-wiring
         tool_results = []
         last_outputs: Dict[str, Dict[str, Any]] = {}
@@ -135,6 +197,8 @@ class AgentRunner:
                     inputs["patient_goals"] = context.get("patient_goals") or ""
                 if not inputs.get("parsed_phr") and "parse_phr_bundle" in last_outputs:
                     inputs["parsed_phr"] = last_outputs["parse_phr_bundle"]
+                if not inputs.get("priorities") and "extract_visit_priorities" in last_outputs:
+                    inputs["priorities"] = last_outputs["extract_visit_priorities"].get("priorities", [])
 
                 tracer.log(
                     "CHECK",
@@ -142,8 +206,29 @@ class AgentRunner:
                         "auto_wiring": "visit brief inputs ensured",
                         "visit_reason_present": bool(inputs.get("visit_reason")),
                         "has_parsed_phr": bool(inputs.get("parsed_phr")),
+                        "has_priorities": bool(inputs.get("priorities")),
                     },
                 )
+
+            # ---- Sleep auto-wiring ----
+            if tname == "analyze_sleep_patterns":
+                if not inputs.get("nights") and "get_sleep_series" in last_outputs:
+                    inputs["nights"] = last_outputs["get_sleep_series"].get("nights", [])
+                if not inputs.get("user_query"):
+                    inputs["user_query"] = user_query
+                tracer.log("CHECK", {"sleep_analysis_autowiring": bool(inputs.get("nights"))})
+
+            # ---- Visit priorities auto-wiring ----
+            if tname == "extract_visit_priorities":
+                if not inputs.get("parsed_phr") and "parse_phr_bundle" in last_outputs:
+                    inputs["parsed_phr"] = last_outputs["parse_phr_bundle"]
+                tracer.log("CHECK", {"visit_priorities_autowiring": bool(inputs.get("parsed_phr"))})
+
+            # ---- Med-profile auto-wiring ----
+            if tname == "check_interactions":
+                if not inputs.get("med_list") and "load_med_profile" in last_outputs:
+                    inputs["med_list"] = last_outputs["load_med_profile"].get("med_list", [])
+                tracer.log("CHECK", {"med_profile_autowiring": bool(inputs.get("med_list"))})
 
             res = self.registry.run(tname, inputs, tracer=tracer)
             tool_results.append(res.model_dump())
@@ -189,17 +274,17 @@ class AgentRunner:
             AgentRole(
                 name="SleepAgent",
                 description="Handles sleep/recovery coaching using wearable sleep data and sleep guidance knowledge.",
-                allowed_tools=["get_sleep_series", "retrieve_sleep_guidance"],
+                allowed_tools=["get_sleep_series", "analyze_sleep_patterns", "retrieve_sleep_guidance"],
             ),
             AgentRole(
                 name="MedSafetyAgent",
                 description="Handles medication/supplement interaction checks and safety-focused guidance.",
-                allowed_tools=["check_interactions", "retrieve_meds_guidance"],
+                allowed_tools=["load_med_profile", "check_interactions", "retrieve_meds_guidance"],
             ),
             AgentRole(
                 name="VisitPrepAgent",
                 description="Handles visit preparation using PHR parsing and visit-brief generation.",
-                allowed_tools=["parse_phr_bundle", "generate_visit_brief_from_parsed"],
+                allowed_tools=["parse_phr_bundle", "extract_visit_priorities", "generate_visit_brief_from_parsed"],
             ),
         ]
 

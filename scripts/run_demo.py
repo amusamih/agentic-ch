@@ -12,11 +12,14 @@ from ch_agent.core.llm import load_env
 from ch_agent.core.tools import ToolRegistry, ToolSpec
 
 from ch_agent.tools.wearable import get_sleep_series_tool
+from ch_agent.tools.sleep_analysis import analyze_sleep_patterns_tool
 from ch_agent.tools.retrieval import retrieve_sleep_guidance_tool
 from ch_agent.tools.meds import check_interactions_tool
 from ch_agent.tools.retrieval_meds import retrieve_meds_guidance_tool
+from ch_agent.tools.med_profile import load_med_profile_tool
 from ch_agent.tools.phr import parse_phr_bundle_tool
 from ch_agent.tools.visit_prep2 import generate_visit_brief_from_parsed_tool
+from ch_agent.tools.visit_priorities import extract_visit_priorities_tool
 
 
 app = typer.Typer(add_completion=False)
@@ -31,8 +34,17 @@ class SleepGuidanceInputs(BaseModel):
     user_query: str = Field(..., min_length=3)
 
 
+class SleepAnalysisInputs(BaseModel):
+    nights: Optional[List[Dict[str, Any]]] = None
+    user_query: str = ""
+
+
 class InteractionInputs(BaseModel):
     med_list: List[str]
+
+
+class LoadMedProfileInputs(BaseModel):
+    dummy: str = "ok"
 
 
 class MedGuidanceInputs(BaseModel):
@@ -43,10 +55,15 @@ class ParseInputs(BaseModel):
     dummy: str = "ok"
 
 
+class VisitPrioritiesInputs(BaseModel):
+    parsed_phr: Optional[Dict[str, Any]] = None
+
+
 class BriefFromParsedInputs(BaseModel):
     visit_reason: Optional[str] = None  # auto-filled by AgentRunner if missing
     patient_goals: str = ""
     parsed_phr: Optional[Dict[str, Any]] = None
+    priorities: Optional[List[Dict[str, Any]]] = None
 
 
 def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
@@ -64,6 +81,19 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
                 handler=lambda inp: get_sleep_series_tool(csv_path=csv_path, user_id=inp.user_id, days=inp.days),
             )
         )
+
+        reg.register(
+            ToolSpec(
+                name="analyze_sleep_patterns",
+                description="Analyze retrieved sleep nights to detect variability, short nights, and notable patterns.",
+                input_model=SleepAnalysisInputs,
+                handler=lambda inp: analyze_sleep_patterns_tool(
+                    nights=inp.nights,
+                    user_query=inp.user_query,
+                ),
+            )
+        )
+
         reg.register(
             ToolSpec(
                 name="retrieve_sleep_guidance",
@@ -84,6 +114,18 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
             )
         )
 
+
+
+        reg.register(
+            ToolSpec(
+                name="load_med_profile",
+                description="Load the user's saved medication/supplement profile from a local synthetic dataset.",
+                input_model=LoadMedProfileInputs,
+                handler=lambda _inp: load_med_profile_tool(
+                    profile_path=(project_root / "data" / "synthetic" / "med_profile.json")
+                ),
+            )
+        )
 
         reg.register(
             ToolSpec(
@@ -108,6 +150,18 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
                 handler=lambda _inp: parse_phr_bundle_tool(bundle_path=bundle_path),
             )
         )
+
+        reg.register(
+            ToolSpec(
+                name="extract_visit_priorities",
+                description="Extract the most important visit agenda items from parsed PHR data.",
+                input_model=VisitPrioritiesInputs,
+                handler=lambda inp: extract_visit_priorities_tool(
+                    parsed_phr=inp.parsed_phr or {},
+                ),
+            )
+        )
+
         reg.register(
             ToolSpec(
                 name="generate_visit_brief_from_parsed",
@@ -120,6 +174,7 @@ def build_registry(project_root: Path, app_name: str) -> ToolRegistry:
                     parsed_phr=inp.parsed_phr or {},
                     visit_reason=inp.visit_reason,
                     patient_goals=inp.patient_goals,
+                    priorities=inp.priorities or [],
                     model="gpt-4o-mini",
                 ),
             )
@@ -141,7 +196,7 @@ def preset_query_and_context(app_name: str, paper_demo: bool) -> tuple[str, Dict
 
     if app_name == "meds":
         q = "Check interactions between my medications and supplements and tell me what to do."
-        ctx = {"med_list": ["warfarin", "ibuprofen"]}
+        ctx = {}
         return q, ctx
 
     if app_name == "visit":
@@ -193,7 +248,16 @@ def run(
             if oneshot_tool == "get_sleep_series":
                 oneshot_inputs = {"user_id": ctx.get("user_id", "U1"), "days": 14}
             elif oneshot_tool == "check_interactions":
-                oneshot_inputs = {"med_list": ctx.get("med_list", [])}
+                default_med_list = ctx.get("med_list", [])
+                if not default_med_list:
+                    prof = project_root / "data" / "synthetic" / "med_profile.json"
+                    if prof.exists():
+                        profile = json.loads(prof.read_text(encoding="utf-8-sig"))
+                        meds = [m.get("name", "") for m in profile.get("active_medications", [])]
+                        sups = [s.get("name", "") for s in profile.get("supplements", [])]
+                        otc = [o.get("name", "") for o in profile.get("otc_or_as_needed", [])]
+                        default_med_list = [x for x in meds + sups + otc if x]
+                oneshot_inputs = {"med_list": default_med_list}
             elif oneshot_tool == "parse_phr_bundle":
                 oneshot_inputs = {"dummy": "ok"}
             elif oneshot_tool == "generate_visit_brief_from_parsed":

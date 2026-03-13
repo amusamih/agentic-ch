@@ -1,0 +1,46 @@
+﻿{
+  "profile_id": "M1",
+  "patient_label": "Synthetic Consumer",
+  "active_medications": [
+    {
+      "name": "warfarin",
+      "dose": "5 mg",
+      "frequency": "once daily",
+      "status": "active"
+    },
+    {
+      "name": "metformin",
+      "dose": "500 mg",
+      "frequency": "twice daily",
+      "status": "active"
+    },
+    {
+      "name": "atorvastatin",
+      "dose": "20 mg",
+      "frequency": "once daily",
+      "status": "active"
+    }
+  ],
+  "supplements": [
+    {
+      "name": "vitamin d",
+      "dose": "1000 IU",
+      "frequency": "once daily",
+      "status": "active"
+    }
+  ],
+  "otc_or_as_needed": [
+    {
+      "name": "ibuprofen",
+      "dose": "400 mg",
+      "frequency": "as needed",
+      "status": "occasional"
+    }
+  ],
+  "allergies": [
+    {
+      "name": "penicillin",
+      "reaction": "rash"
+    }
+  ]
+}
