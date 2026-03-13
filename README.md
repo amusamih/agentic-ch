@@ -93,7 +93,7 @@ python scripts/run_eval.py --app visit --mode agentic_multi
 
 ## Notes
 - The current prototype uses **synthetic data only**
-- `runs/` contains local artifacts and is excluded from git
+- `runs/` contains local artifacts and is excluded from gigit t
 - The project is designed so that real datasets or connectors could be added later if desired
 
 ## Intended research contribution
