@@ -9,3 +9,6 @@ runs/
 .pytest_cache/
 .mypy_cache/
 *.egg-info/
+# Figures: generated assets and draft scripts
+figures/
+scripts/make_compact_comparison_panel.py
