@@ -12,3 +12,4 @@ runs/
 # Figures: generated assets and draft scripts
 figures/
 scripts/make_compact_comparison_panel.py
+docs/paper_case/
