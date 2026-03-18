@@ -12,4 +12,7 @@ runs/
 # Figures: generated assets and draft scripts
 figures/
 scripts/make_compact_comparison_panel.py
+scripts/make_compact_comparison_panel_v2.py
+scripts/make_compact_comparison_panel_v22.py
+scripts/make_case_excerpt_card.py
 docs/paper_case/
